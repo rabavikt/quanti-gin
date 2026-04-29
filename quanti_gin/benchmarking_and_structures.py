@@ -59,37 +59,29 @@ def visualize_molecule(coordinates: np.ndarray, geometry: str):
 def run_benchmark(num_atoms, num_jobs):
 
     """
-    Run benchmark tests comparing different heuristic methods for edge initialization in Separable Pair Approximation (SPA) optimization.
-
-    This function generates random molecular geometries and evaluates the performance of various graph matching heuristics by comparing their resulting 
-    energies against the Full Configuration Interaction (FCI) ground state energy.
+    Benchmark heuristics on random molecular geometries.
 
     Parameters
     ----------
     num_atoms : int
-        Number of hydrogen atoms in the molecule. Determines the molecular size 
-        and complexity of the graph matching problem.
+        Number of atoms.
     num_jobs : int
-        Number of random molecular geometries to generate and test. Each job 
-        represents one molecular configuration with randomly positioned atoms 
-        in 3D space.
+        Number of molecules to test.
 
     Returns
     -------
     None
-        Results are saved directly to a CSV file named 'benchmark_results_{num_atoms}.csv' in the current directory.
+        Saves results to CSV.
 
-    Output CSV Structure
-    --------------------
-    The output CSV contains one row per (molecule, heuristic) combination with columns:
-    
-    - method: Name of the heuristic
-    - energy: SPA optimization result energy
-    - edges: Edge configuration used
-    - runtime: Execution time of the heuristic (seconds)
-    - ground_state_energy: FCI ground state energy
-    - energy_gap: Difference from ground state
-    - error: Error message if the heuristic failed (otherwise absent)
+    CSV structure
+    -------------
+    method : str
+    energy : float
+    edges : list[tuple[int, int]]
+    runtime : float
+    ground_state_energy : float
+    energy_gap : float
+    error : str (optional)
     """
 
     jobs = DataGenerator.generate_jobs(number_of_jobs=num_jobs, number_of_atoms=num_atoms)
@@ -154,41 +146,29 @@ def run_benchmark(num_atoms, num_jobs):
 def run_benchmark_for_linear_molecules(num_atoms: int, num_jobs: int, axis="x", base_spacing=0.25):
 
     """
-    Run benchmark tests on linear molecular geometries with varying atom spacing.
-
-    This function generates linear (chain-like) molecular geometries along a specified axis and evaluates the performance of various graph matching heuristics by comparing 
-    their resulting energies against the Full Configuration Interaction (FCI) ground state energy.
+    Benchmark heuristics on linear molecules.
 
     Parameters
     ----------
     num_atoms : int
-        Number of hydrogen atoms in the linear molecule. Determines the chain length and complexity of the graph matching problem.
     num_jobs : int
-        Number of linear molecular geometries to generate with varying spacing. 
-    axis : {"x", "y", "z"}, default="x"
-        Cartesian axis along which atoms are arranged linearly.
-    base_spacing : float, default=0.25
-        Base distance between consecutive atoms. The actual spacing for each job is calculated as: base_spacing + 0.05 * job_number
+    axis : {"x","y","z"}, optional
+    base_spacing : float, optional
 
     Returns
     -------
     None
-        Results are saved directly to a CSV file named 'benchmark_results_{num_atoms}_line_{axis}.csv' in the current directory.
-    
-    **Spacing Progression:**
-    For each job i (1 to num_jobs), the spacing is: base_spacing + 0.05 * i
+        Saves results to CSV.
 
-    Output CSV Structure
-    --------------------
-    The output CSV contains one row per (molecule, heuristic) combination with columns:
-    
-    - method: Name of the heuristic
-    - energy: SPA optimization result energy
-    - edges: Edge configuration used
-    - runtime: Execution time of the heuristic (seconds)
-    - ground_state_energy: FCI ground state energy
-    - energy_gap: Difference from ground state
-    - error: Error message if the heuristic failed (otherwise absent)
+    CSV structure
+    -------------
+    method : str
+    energy : float
+    edges : list[tuple[int, int]]
+    runtime : float
+    ground_state_energy : float
+    energy_gap : float
+    error : str (optional)
     """
 
     assert axis in ("x", "y", "z") #Axis must be 'x', 'y', or 'z'
@@ -264,44 +244,29 @@ def run_benchmark_for_linear_molecules(num_atoms: int, num_jobs: int, axis="x", 
 def run_benchmark_for_ring_molecules(num_atoms, num_jobs, radius = 1, radius_increase = 0.25):
 
     """
-    Run benchmark tests on ring/cyclic molecular geometries with varying ring sizes.
-
-    This function generates ring-shaped molecular geometries where atoms are arranged in a circle on the xy-plane 
-    and evaluates the performance of heuristics. 
+    Benchmark heuristics on ring molecules.
 
     Parameters
     ----------
     num_atoms : int
-        Number of hydrogen atoms in the ring molecule.
     num_jobs : int
-        Number of ring molecular geometries to generate with varying radius. 
-        Each job uses a progressively larger ring radius.
-    radius : float, default=1.0
-        Initial radius (in Angstroms) of the ring for the first job. 
-        Atoms are positioned at equal angular intervals on a circle of this radius in the xy-plane.
-    radius_increase : float, default=0.25
-        Amount (in Angstroms) by which the radius increases for each subsequent job.
+    radius : float, optional
+    radius_increase : float, optional
 
     Returns
     -------
     None
-        Results are saved directly to a CSV file named 
-        'benchmark_results_{num_atoms}_ring.csv' in the current directory.
-    
-    **Radius Progression:**
-    For each job i (1 to num_jobs), the radius is: radius + (i - 1) * radius_increase
+        Saves results to CSV.
 
-    Output CSV Structure
-    --------------------
-    The output CSV contains one row per (molecule, heuristic) combination with columns:
-    
-    - method: Name of the heuristic
-    - energy: SPA optimization result energy
-    - edges: Edge configuration used
-    - runtime: Execution time of the heuristic (seconds)
-    - ground_state_energy: FCI ground state energy
-    - energy_gap: Difference from ground state
-    - error: Error message if the heuristic failed (otherwise absent)
+    CSV structure
+    -------------
+    method : str
+    energy : float
+    edges : list[tuple[int, int]]
+    runtime : float
+    ground_state_energy : float
+    energy_gap : float
+    error : str (optional)
     """
 
     jobs = DataGenerator.generate_jobs(number_of_jobs=num_jobs, number_of_atoms=num_atoms)
