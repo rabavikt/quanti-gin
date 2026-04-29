@@ -28,7 +28,7 @@ def benchmarking_data_visualize_matplotlib(
         - "energy": computed energy values
         - "runtime": execution time in seconds
         - "ground state energy": reference energy
-        - "energy gab": difference to ground state (note: column name must match exactly)
+        - "energy gab": difference to ground state 
 
     methods_to_plot : list of str, optional
         List of methods to include in the visualization.
@@ -408,36 +408,7 @@ def benchmarking_data_visualize_matplotlib(
     plt.tight_layout()
     plt.show()
 
-
-    fig, ax = plt.subplots(figsize=(10, 6))
-
-    ax.plot(
-        filtered["mol_id"],
-        filtered["ground state energy"],
-        color="black",
-        linewidth=2,
-        label="Ground State",
-    )
-    ax.plot(
-        filtered["mol_id"],
-        filtered["ground state energy"],
-        "o",
-        color="black",
-        linewidth=2,
-        label="Ground State",
-    )
-
-    df = filtered[filtered["method"] == "blossom"].sort_values("mol_id")
-    ax.plot(df["mol_id"], df["energy"], color = "skyblue", linewidth=1.5, alpha=1, label="blossom")
-    ax.plot(df["mol_id"], df["energy"], "o", color = "skyblue", linewidth=1.5, alpha=1, label="blossom")
-
-    ax.set_title(f"Energy Comparison for First {show_first_n_molecules} Molecules")
-    ax.set_xlabel("Molecule ID")
-    ax.set_ylabel("Energy (Eh) calculated by Blossom")
-    ax.legend(loc="upper right")
-    plt.tight_layout()
-    plt.show()
-
+    # 7 — ZOOMED FIRST N MOLECULES BLOSSOM VS 2-OPT
 
     fig, ax = plt.subplots(figsize=(10, 6))
     if "line" in file_name:

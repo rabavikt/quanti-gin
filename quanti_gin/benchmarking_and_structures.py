@@ -1,7 +1,7 @@
+import quanti_gin
 import quanti_gin.data_generator
 import tequila as tq
 import numpy as np
-import quanti_gin
 import pandas as pd
 import time
 import matplotlib.pyplot as plt
@@ -78,23 +78,6 @@ def run_benchmark(num_atoms, num_jobs):
     -------
     None
         Results are saved directly to a CSV file named 'benchmark_results_{num_atoms}.csv' in the current directory.
-
-    Notes
-    -----
-    The function tests all heuristics defined in the global `heueristics` dictionary.
-    For each molecule and heuristic combination, it computes:
-    
-    - **runtime**: Time taken by the heuristic to generate edges (seconds)
-    - **energy**: Final energy from SPA optimization using the heuristic's edges
-    - **ground_state_energy**: Reference FCI ground state energy
-    - **energy_gap**: Difference between SPA energy and ground state (energy - ground_state_energy)
-    - **edges**: The edge configuration produced by the heuristic
-    
-    Different heuristics have different function signatures:
-    
-    - Heuristics requiring only coordinates: nearest neighbor, nearest insertion
-    - Heuristics requiring num_atoms and coordinates: blossom, simulated annealing, 
-      2-opt, genetic algorithm, brute force
 
     Output CSV Structure
     --------------------
@@ -182,17 +165,10 @@ def run_benchmark_for_linear_molecules(num_atoms: int, num_jobs: int, axis="x", 
         Number of hydrogen atoms in the linear molecule. Determines the chain length and complexity of the graph matching problem.
     num_jobs : int
         Number of linear molecular geometries to generate with varying spacing. 
-        Each job uses a slightly different spacing between atoms to test robustness 
-        across different bond lengths.
     axis : {"x", "y", "z"}, default="x"
         Cartesian axis along which atoms are arranged linearly.
-        - "x": Atoms aligned along x-axis (y=0, z=0)
-        - "y": Atoms aligned along y-axis (x=0, z=0)  
-        - "z": Atoms aligned along z-axis (x=0, y=0)
     base_spacing : float, default=0.25
-        Base distance (in Angstroms) between consecutive atoms. The actual spacing 
-        for each job is calculated as: base_spacing + 0.05 * job_number, creating 
-        a range of bond lengths from base_spacing to base_spacing + 0.05 * num_jobs.
+        Base distance between consecutive atoms. The actual spacing for each job is calculated as: base_spacing + 0.05 * job_number
 
     Returns
     -------
@@ -201,11 +177,6 @@ def run_benchmark_for_linear_molecules(num_atoms: int, num_jobs: int, axis="x", 
     
     **Spacing Progression:**
     For each job i (1 to num_jobs), the spacing is: base_spacing + 0.05 * i
-    
-    Example with base_spacing=0.25 and num_jobs=3:
-    - Job 1: spacing = 0.30 Å
-    - Job 2: spacing = 0.35 Å  
-    - Job 3: spacing = 0.40 Å
 
     Output CSV Structure
     --------------------
@@ -227,7 +198,6 @@ def run_benchmark_for_linear_molecules(num_atoms: int, num_jobs: int, axis="x", 
     for i in tqdm(range(1, num_jobs + 1)):
         # Vary spacing slightly for each job
         spacing = base_spacing + 0.05 * i
-        print(spacing)
         coordinates = []
         for j in range(num_atoms):
             if(axis == "x"):
@@ -296,9 +266,8 @@ def run_benchmark_for_ring_molecules(num_atoms, num_jobs, radius = 1, radius_inc
     """
     Run benchmark tests on ring/cyclic molecular geometries with varying ring sizes.
 
-    This function generates ring-shaped (cyclic) molecular geometries where atoms are 
-    arranged in a circle on the xy-plane and evaluates the performance of heuristics by comparing their resulting energies against the Full 
-    Configuration Interaction (FCI) ground state energy. This is useful for testing heuristics on symmetric, cyclic structures.
+    This function generates ring-shaped molecular geometries where atoms are arranged in a circle on the xy-plane 
+    and evaluates the performance of heuristics. 
 
     Parameters
     ----------
@@ -306,13 +275,12 @@ def run_benchmark_for_ring_molecules(num_atoms, num_jobs, radius = 1, radius_inc
         Number of hydrogen atoms in the ring molecule.
     num_jobs : int
         Number of ring molecular geometries to generate with varying radius. 
-        Each job uses a progressively larger ring radius to test heuristic performance across different ring sizes and atomic separations.
+        Each job uses a progressively larger ring radius.
     radius : float, default=1.0
         Initial radius (in Angstroms) of the ring for the first job. 
         Atoms are positioned at equal angular intervals on a circle of this radius in the xy-plane.
     radius_increase : float, default=0.25
         Amount (in Angstroms) by which the radius increases for each subsequent job.
-        The radius for job i is: radius + (i - 1) * radius_increase
 
     Returns
     -------
@@ -320,38 +288,8 @@ def run_benchmark_for_ring_molecules(num_atoms, num_jobs, radius = 1, radius_inc
         Results are saved directly to a CSV file named 
         'benchmark_results_{num_atoms}_ring.csv' in the current directory.
     
-    **Atomic Positioning:**
-    For n atoms on a circle of radius r, atom i is placed at:
-    - angle_i = 2π * i / n  (evenly distributed around the circle)
-    - x_i = r * cos(angle_i)
-    - y_i = r * sin(angle_i)
-    - z_i = 0.0
-    
     **Radius Progression:**
     For each job i (1 to num_jobs), the radius is: radius + (i - 1) * radius_increase
-    
-    Example with radius=1.0, radius_increase=0.25, and num_jobs=4:
-    - Job 1: radius = 1.00 Å
-    - Job 2: radius = 1.25 Å
-    - Job 3: radius = 1.50 Å
-    - Job 4: radius = 1.75 Å
-    
-    **Heuristic Evaluation:**
-    The function tests all heuristics defined in the global `heueristics` dictionary.
-    For each molecule and heuristic combination, it computes:
-    
-    - **runtime**: Time taken by the heuristic to generate edges (seconds)
-    - **energy**: Final energy from SPA optimization using the heuristic's edges
-    - **ground_state_energy**: Reference FCI ground state energy
-    - **energy_gap**: Difference between SPA energy and ground state (energy - ground_state_energy)
-    - **edges**: The edge configuration produced by the heuristic
-    
-    **Function Signatures:**
-    Different heuristics have different input requirements:
-    
-    - Coordinates only: nearest neighbor, nearest insertion
-    - num_atoms + coordinates: blossom, simulated annealing, 2-opt, 
-      genetic algorithm, brute force
 
     Output CSV Structure
     --------------------
@@ -364,7 +302,6 @@ def run_benchmark_for_ring_molecules(num_atoms, num_jobs, radius = 1, radius_inc
     - ground_state_energy: FCI ground state energy
     - energy_gap: Difference from ground state
     - error: Error message if the heuristic failed (otherwise absent)
-
     """
 
     jobs = DataGenerator.generate_jobs(number_of_jobs=num_jobs, number_of_atoms=num_atoms)
@@ -435,14 +372,17 @@ def run_benchmark_for_ring_molecules(num_atoms, num_jobs, radius = 1, radius_inc
     
     data.to_csv(f"benchmark_results_{num_atoms}_ring.csv", index=False)
 
+#examples for testing
+
 if __name__ == "__main__":  
 
-    run_benchmark(num_atoms=6, num_jobs=200)
+    run_benchmark(num_atoms=6, num_jobs=5)
 
-    run_benchmark_for_linear_molecules(num_atoms=4, num_jobs=200, axis="x")
+    #run_benchmark_for_linear_molecules(num_atoms=4, num_jobs=200, axis="x")
    
-    run_benchmark_for_ring_molecules(num_atoms=10, num_jobs=200, radius=1)
-
+    #run_benchmark_for_ring_molecules(num_atoms=10, num_jobs=200, radius=1)
+    '''
     benchmarking_data_visualize_matplotlib("benchmark_results_4_ring.csv", 
                                                 methods_to_plot=["blossom", "nearest_insertion", "nearest_neighbour", "simulated annealing", "2-opt", "genetic algorithm", "brute force"],
                                                 show_first_n_molecules=55)
+    '''
