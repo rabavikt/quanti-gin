@@ -7,11 +7,11 @@ setup(
     package_dir={"": "src"},
     install_requires=[
         "pandas",
-        "matplotlib", 
+        "matplotlib",
         "qulacs",
         "pyscf",
         "openfermion",
-        "project-sunrise==0.2"
+        "project-sunrise==0.2",
     ],
     url="https://github.com/lily-barta/spa-benchmark",
     author="Lily Barta",

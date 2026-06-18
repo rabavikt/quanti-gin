@@ -13,7 +13,7 @@ pip install -e .
 ```
 
 
-## Generating Data 
+## Generating Data
 
 ### 1. Hydrogen Chains ($H_n$)
 
@@ -53,7 +53,7 @@ Generate data for increasing $H_n$ chain length for a fixed interatomic distance
 from spa_benchmark.main_Hn import run_scaling
 run_scaling(n_min=2, n_max=30, distance=1.0)
 ```
-Output CSV files: 
+Output CSV files:
 - `results_vs_n.csv` – SPA/FCI/fidelity vs. n
 - `runtime_vs_n.csv` – Total runtime and individual runtime contributions vs. n
 
@@ -133,14 +133,13 @@ Pre-generated example data is available in `data_hn/`.
 
 ## Notes on Computational Cost
 
-- **FCI calculations** become computationally demanding for larger systems.  
-  For example, a single-point FCI calculation for $H_{14}$ may take approximately **30 minutes to 1 hour**, depending on hardware.  
+- **FCI calculations** become computationally demanding for larger systems.
+  For example, a single-point FCI calculation for $H_{14}$ may take approximately **30 minutes to 1 hour**, depending on hardware.
   For larger chains, FCI becomes prohibitively expensive and is therefore not recommended.
   In the provided scaling script, FCI calculations are automatically disabled for larger systems to avoid excessive runtimes.
 
 - **Near-degeneracies at large interatomic distances:**
-  As the $H_n$ chains dissociate, the FCI ground state becomes degenerate.  
-  To obtain a meaningful fidelity in this regime, multiple FCI roots must be included.  
-  The required number of roots grows rapidly with system size, and it becomes prohibitively expensive beyond $H_{10}$.  
+  As the $H_n$ chains dissociate, the FCI ground state becomes degenerate.
+  To obtain a meaningful fidelity in this regime, multiple FCI roots must be included.
+  The required number of roots grows rapidly with system size, and it becomes prohibitively expensive beyond $H_{10}$.
   For this reason, fidelity calculations at large separations ($d > 2.5$ Å) is disabled for larger systems.
-

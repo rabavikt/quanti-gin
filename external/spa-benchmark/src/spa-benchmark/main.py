@@ -1,11 +1,20 @@
 import sunrise as sun
-import numpy 
+import numpy
 import csv
 import time
 import os
 
 
-def generate_data_point(geometry, get_hf=False, get_ccsdt=False, get_fci=False, verbose=True, filename=None, filename_t=None, save_to_csv=True):
+def generate_data_point(
+    geometry,
+    get_hf=False,
+    get_ccsdt=False,
+    get_fci=False,
+    verbose=True,
+    filename=None,
+    filename_t=None,
+    save_to_csv=True,
+):
     """
     :param geometry: Geometry string or path to .xyz file.
     :param get_hf: Bool, if True compute HF energy and HF/FCI fidelity.
@@ -18,9 +27,11 @@ def generate_data_point(geometry, get_hf=False, get_ccsdt=False, get_fci=False, 
     start = time.time()
 
     # Build tequila/sunrise molecule
-    mol = sun.Molecule(geometry=geometry,basis_set='sto-3g',transformation='reordered-jordan-wigner')
+    mol = sun.Molecule(
+        geometry=geometry, basis_set="sto-3g", transformation="reordered-jordan-wigner"
+    )
     if os.path.isfile(geometry):
-        name = os.path.splitext(os.path.basename(geometry))[0] 
+        name = os.path.splitext(os.path.basename(geometry))[0]
     else:
         name = mol.parameters.name
     results = {"name": name}
@@ -36,23 +47,23 @@ def generate_data_point(geometry, get_hf=False, get_ccsdt=False, get_fci=False, 
         U_hf = mol.prepare_reference()
         wfn_hf = sun.simulate(U_hf)
         fci, fci_wfn = mol.compute_energy("fci", get_wfn=True)
-        fidelity = abs(wfn_hf.inner(fci_wfn))**2
+        fidelity = abs(wfn_hf.inner(fci_wfn)) ** 2
         results["hf_fid"] = f"{fidelity:.6f}"
         if verbose:
             print(f"HF      : {hf:.10f}")
             print(f"HF error: {hf-fci:.10f}")
             print(f"HF/FCI fidelity : {fidelity:.6f}")
-        
+
     if get_ccsdt:
         # Compute CCSD(T) energy
         ccsdt_start = time.time()
-        ccsdt = mol.compute_energy('CCSD(T)')
+        ccsdt = mol.compute_energy("CCSD(T)")
         results["ccsdt"] = f"{ccsdt:.10f}"
         results_t["ccsdt"] = f"{time.time() - ccsdt_start:.6f}"
         if verbose:
             print(f"CCSD(T)  : {ccsdt:.10f}")
             print(f"CCSD(T) took {time.time() - ccsdt_start:.6f}s")
-    
+
     # Localise orbitals
     ol_start = time.time()
     mol, edges = sun.CLPO.generate_CLPO_molecule_edges(mol)
@@ -73,7 +84,7 @@ def generate_data_point(geometry, get_hf=False, get_ccsdt=False, get_fci=False, 
     U = mol.make_spa_ansatz(edges=edges, hcb=True)
     H = mol.make_hardcore_boson_hamiltonian()
     grouping = sun.SPAFP.make_decomposed_clusters(U)
-    spa_start=time.time()
+    spa_start = time.time()
     vqe_solver = sun.SPAFP.SPASolver(decompose=True, grouping=grouping)
     spa = vqe_solver(H=H, circuit=U, molecule=mol)
     results["spa"] = f"{spa.energy:.10f}"
@@ -84,7 +95,9 @@ def generate_data_point(geometry, get_hf=False, get_ccsdt=False, get_fci=False, 
 
     if get_fci:
         if mol.n_orbitals > 14:
-            print(f"get_fci={get_fci}, but molecule is too big (n_orbitals = {mol.n_orbitals} > 14). Skipping FCI calculation.")
+            print(
+                f"get_fci={get_fci}, but molecule is too big (n_orbitals = {mol.n_orbitals} > 14). Skipping FCI calculation."
+            )
         else:
             # Get HCB-SPA wavefunction
             spa_start = time.time()
@@ -105,7 +118,7 @@ def generate_data_point(geometry, get_hf=False, get_ccsdt=False, get_fci=False, 
 
             # Compute fidelity (SPA/FCI overlap)
             fid_start = time.time()
-            fidelity = abs(wfn_spa.inner(fci_wfn))**2
+            fidelity = abs(wfn_spa.inner(fci_wfn)) ** 2
             results["fid"] = f"{fidelity:.6f}"
             results_t["fid"] = f"{time.time() - fid_start:.6f}"
             if verbose:
@@ -122,7 +135,7 @@ def generate_data_point(geometry, get_hf=False, get_ccsdt=False, get_fci=False, 
             filename = f"results_{name}.csv"
         if filename_t is None:
             filename_t = f"results_{name}_t.csv"
-        
+
         file_exists = os.path.exists(filename)
         with open(filename, mode="a", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=results.keys())
@@ -137,8 +150,9 @@ def generate_data_point(geometry, get_hf=False, get_ccsdt=False, get_fci=False, 
                 writer.writeheader()
             writer.writerow(results_t)
 
+
 if __name__ == "__main__":
-    molecules = ['ch4', 'c2h6', 'c3h8', 'c4h10', 'c5h12', 'c6h14', 'c7h16', 'c8h18']
+    molecules = ["ch4", "c2h6", "c3h8", "c4h10", "c5h12", "c6h14", "c7h16", "c8h18"]
     filename = "alkanes.csv"
     filename_t = "alkanes_t.csv"
 
@@ -153,5 +167,5 @@ if __name__ == "__main__":
             get_fci=True,
             verbose=True,
             filename=filename,
-            filename_t=filename_t
+            filename_t=filename_t,
         )

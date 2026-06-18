@@ -13,10 +13,11 @@ from quanti_gin.shared import nearest_insertion
 from quanti_gin.shared import generate_min_global_distance_edges
 from quanti_gin.shared import brute_force
 from quanti_gin.shared import simulated_annealing
-from quanti_gin.shared import two_opt 
+from quanti_gin.shared import two_opt
 from quanti_gin.shared import genetic_algorithm
-from quanti_gin.visualization_for_benchmarking import benchmarking_data_visualize_matplotlib
-
+from quanti_gin.visualization_for_benchmarking import (
+    benchmarking_data_visualize_matplotlib,
+)
 
 
 heueristics = {
@@ -26,7 +27,7 @@ heueristics = {
     "simulated annealing": simulated_annealing,
     "2-opt": two_opt,
     "genetic algorithm": genetic_algorithm,
-    "brute force": brute_force
+    "brute force": brute_force,
 }
 
 
@@ -36,8 +37,8 @@ def visualize_molecule(coordinates: np.ndarray, geometry: str):
     coordinates: Nx3 array of xyz positions.
     geometry: String for every atom of the form: f"h {coordinate[0]:f} {coordinate[1]:f} {coordinate[2]:f}\n"
     """
-    fig = plt.figure(figsize=(6,6))
-    ax = fig.add_subplot(111, projection='3d')
+    fig = plt.figure(figsize=(6, 6))
+    ax = fig.add_subplot(111, projection="3d")
 
     xs = [c[0] for c in coordinates]
     ys = [c[1] for c in coordinates]
@@ -57,7 +58,6 @@ def visualize_molecule(coordinates: np.ndarray, geometry: str):
 
 
 def run_benchmark(num_atoms, num_jobs):
-
     """
     Benchmark heuristics on random molecular geometries.
 
@@ -84,22 +84,30 @@ def run_benchmark(num_atoms, num_jobs):
     error : str (optional)
     """
 
-    jobs = DataGenerator.generate_jobs(number_of_jobs=num_jobs, number_of_atoms=num_atoms)
+    jobs = DataGenerator.generate_jobs(
+        number_of_jobs=num_jobs, number_of_atoms=num_atoms
+    )
     results = []
 
-    # Optional: Visualize first molecule 
+    # Optional: Visualize first molecule
 
-    #first_job = jobs[0]
-    #visualize_molecule(first_job.coordinates, first_job.geometry)
+    # first_job = jobs[0]
+    # visualize_molecule(first_job.coordinates, first_job.geometry)
 
     for job in tqdm(jobs):
         coordinates = job.coordinates
         geometry = job.geometry
         mol = tq.Molecule(geometry=geometry, basis_set="sto-3g")
-        
+
         for name, function in heueristics.items():
             try:
-                if(name in ("blossom", "simulated annealing", "2-opt", "genetic algorithm", "brute force")):
+                if name in (
+                    "blossom",
+                    "simulated annealing",
+                    "2-opt",
+                    "genetic algorithm",
+                    "brute force",
+                ):
                     start_time = time.time()
                     edges = function(num_atoms, coordinates)
 
@@ -110,41 +118,49 @@ def run_benchmark(num_atoms, num_jobs):
 
                     runtime = time.time() - start_time
 
-                result = DataGenerator.run_spa_optimization(molecule=mol, coordinates=coordinates, edges=edges)
+                result = DataGenerator.run_spa_optimization(
+                    molecule=mol, coordinates=coordinates, edges=edges
+                )
 
-                #_, ground_state_energy = DataGenerator.get_ground_states(molecule = mol)
-                #ground_state_energy = DataGenerator.run_fci_optimization(molecule=mol)
+                # _, ground_state_energy = DataGenerator.get_ground_states(molecule = mol)
+                # ground_state_energy = DataGenerator.run_fci_optimization(molecule=mol)
                 ground_state_energy = mol.compute_energy("fci")
                 energy = result["energy"]
 
                 energy_gab = energy - ground_state_energy
 
-                results.append({
-                    "method": name,
-                    "energy": energy,
-                    "edges": edges,
-                    "runtime": runtime,
-                    "ground state energy": ground_state_energy,
-                    "energy gab": energy_gab
-                })
+                results.append(
+                    {
+                        "method": name,
+                        "energy": energy,
+                        "edges": edges,
+                        "runtime": runtime,
+                        "ground state energy": ground_state_energy,
+                        "energy gab": energy_gab,
+                    }
+                )
 
             except Exception as e:
 
-                results.append({
-                    "method": name,
-                    "energy": None,
-                    "edges": None,
-                    "runtime": None,
-                    "ground state energy": None,
-                    "energy gab": None,
-                    "error": str(e)
-                })
+                results.append(
+                    {
+                        "method": name,
+                        "energy": None,
+                        "edges": None,
+                        "runtime": None,
+                        "ground state energy": None,
+                        "energy gab": None,
+                        "error": str(e),
+                    }
+                )
 
     data = pd.DataFrame(results)
-    data.to_csv(f"benchmark_results_{num_atoms}.csv", index = False)
+    data.to_csv(f"benchmark_results_{num_atoms}.csv", index=False)
 
-def run_benchmark_for_linear_molecules(num_atoms: int, num_jobs: int, axis="x", base_spacing=0.25):
 
+def run_benchmark_for_linear_molecules(
+    num_atoms: int, num_jobs: int, axis="x", base_spacing=0.25
+):
     """
     Benchmark heuristics on linear molecules.
 
@@ -171,7 +187,7 @@ def run_benchmark_for_linear_molecules(num_atoms: int, num_jobs: int, axis="x", 
     error : str (optional)
     """
 
-    assert axis in ("x", "y", "z") #Axis must be 'x', 'y', or 'z'
+    assert axis in ("x", "y", "z")  # Axis must be 'x', 'y', or 'z'
 
     results = []
 
@@ -180,9 +196,9 @@ def run_benchmark_for_linear_molecules(num_atoms: int, num_jobs: int, axis="x", 
         spacing = base_spacing + 0.05 * i
         coordinates = []
         for j in range(num_atoms):
-            if(axis == "x"):
+            if axis == "x":
                 coord = [j * spacing, 0.0, 0.0]
-            elif(axis == "y"):
+            elif axis == "y":
                 coord = [0.0, j * spacing, 0.0]
             else:
                 coord = [0.0, 0.0, j * spacing]
@@ -191,13 +207,19 @@ def run_benchmark_for_linear_molecules(num_atoms: int, num_jobs: int, axis="x", 
         coordinates = np.array(coordinates)
         geometry = DataGenerator.generate_geometry_string(coordinates)
 
-        #visualize_molecule(coordinates, geometry)
+        # visualize_molecule(coordinates, geometry)
 
         mol = tq.Molecule(geometry=geometry, basis_set="sto-3g")
 
         for name, function in heueristics.items():
             try:
-                if(name in ("blossom", "simulated annealing", "2-opt", "genetic algorithm", "brute force")):
+                if name in (
+                    "blossom",
+                    "simulated annealing",
+                    "2-opt",
+                    "genetic algorithm",
+                    "brute force",
+                ):
                     start_time = time.time()
                     edges = function(num_atoms, coordinates)
                     runtime = time.time() - start_time
@@ -208,9 +230,7 @@ def run_benchmark_for_linear_molecules(num_atoms: int, num_jobs: int, axis="x", 
                     runtime = time.time() - start_time
 
                 result = DataGenerator.run_spa_optimization(
-                    molecule=mol,
-                    coordinates=coordinates,
-                    edges=edges
+                    molecule=mol, coordinates=coordinates, edges=edges
                 )
 
                 ground_state_energy = mol.compute_energy("fci")
@@ -218,31 +238,37 @@ def run_benchmark_for_linear_molecules(num_atoms: int, num_jobs: int, axis="x", 
 
                 energy_gab = energy - ground_state_energy
 
-                results.append({
-                    "method": name,
-                    "energy": energy,
-                    "edges": edges,
-                    "runtime": runtime,
-                    "ground state energy": ground_state_energy,
-                    "energy gab": energy_gab
-                })
+                results.append(
+                    {
+                        "method": name,
+                        "energy": energy,
+                        "edges": edges,
+                        "runtime": runtime,
+                        "ground state energy": ground_state_energy,
+                        "energy gab": energy_gab,
+                    }
+                )
 
             except Exception as e:
-                results.append({
-                    "method": name,
-                    "energy": None,
-                    "edges": None,
-                    "runtime": None,
-                    "ground state energy": None,
-                    "energy gab": None,
-                    "error": str(e)
-                })
+                results.append(
+                    {
+                        "method": name,
+                        "energy": None,
+                        "edges": None,
+                        "runtime": None,
+                        "ground state energy": None,
+                        "energy gab": None,
+                        "error": str(e),
+                    }
+                )
 
     data = pd.DataFrame(results)
     data.to_csv(f"benchmark_results_{num_atoms}_line_{axis}.csv", index=False)
 
-def run_benchmark_for_ring_molecules(num_atoms, num_jobs, radius = 1, radius_increase = 0.25):
 
+def run_benchmark_for_ring_molecules(
+    num_atoms, num_jobs, radius=1, radius_increase=0.25
+):
     """
     Benchmark heuristics on ring molecules.
 
@@ -269,17 +295,21 @@ def run_benchmark_for_ring_molecules(num_atoms, num_jobs, radius = 1, radius_inc
     error : str (optional)
     """
 
-    jobs = DataGenerator.generate_jobs(number_of_jobs=num_jobs, number_of_atoms=num_atoms)
+    jobs = DataGenerator.generate_jobs(
+        number_of_jobs=num_jobs, number_of_atoms=num_atoms
+    )
     results = []
 
     for job in tqdm(jobs):
 
         angles = np.linspace(0, 2 * np.pi, num_atoms, endpoint=False)
-        #angles = np.sort(np.random.uniform(0, 2 * np.pi, num_atoms))
-        coordinates = np.array([[radius * np.cos(angle), radius * np.sin(angle), 0.0] for angle in angles])
-      
-        #print(radius)
-        radius =  radius + radius_increase
+        # angles = np.sort(np.random.uniform(0, 2 * np.pi, num_atoms))
+        coordinates = np.array(
+            [[radius * np.cos(angle), radius * np.sin(angle), 0.0] for angle in angles]
+        )
+
+        # print(radius)
+        radius = radius + radius_increase
 
         formatted_lines = []
         for coord in coordinates:
@@ -288,13 +318,19 @@ def run_benchmark_for_ring_molecules(num_atoms, num_jobs, radius = 1, radius_inc
             formatted_lines.append(line)
         geometry = "\n".join(formatted_lines)
 
-        #visualize_molecule(coordinates, geometry)
+        # visualize_molecule(coordinates, geometry)
 
         mol = tq.Molecule(geometry=geometry, basis_set="sto-3g")
-        
+
         for name, function in heueristics.items():
             try:
-                if(name in ("blossom", "simulated annealing", "2-opt", "genetic algorithm", "brute force")):
+                if name in (
+                    "blossom",
+                    "simulated annealing",
+                    "2-opt",
+                    "genetic algorithm",
+                    "brute force",
+                ):
                     start_time = time.time()
                     edges = function(num_atoms, coordinates)
 
@@ -305,49 +341,56 @@ def run_benchmark_for_ring_molecules(num_atoms, num_jobs, radius = 1, radius_inc
 
                     runtime = time.time() - start_time
 
-                result = DataGenerator.run_spa_optimization(molecule=mol, coordinates=coordinates, edges=edges)
+                result = DataGenerator.run_spa_optimization(
+                    molecule=mol, coordinates=coordinates, edges=edges
+                )
 
                 ground_state_energy = mol.compute_energy("fci")
                 energy = result["energy"]
 
                 energy_gap = energy - ground_state_energy
 
-                results.append({
-                    "method": name,
-                    "energy": energy,
-                    "edges": edges,
-                    "runtime": runtime,
-                    "ground state energy": ground_state_energy,
-                    "energy gab": energy_gap
-                })
+                results.append(
+                    {
+                        "method": name,
+                        "energy": energy,
+                        "edges": edges,
+                        "runtime": runtime,
+                        "ground state energy": ground_state_energy,
+                        "energy gab": energy_gap,
+                    }
+                )
 
             except Exception as e:
 
-                results.append({
-                    "method": name,
-                    "energy": None,
-                    "edges": None,
-                    "runtime": None,
-                    "ground state energy": None,
-                    "energy gab": None,
-                    "error": str(e)
-                })
+                results.append(
+                    {
+                        "method": name,
+                        "energy": None,
+                        "edges": None,
+                        "runtime": None,
+                        "ground state energy": None,
+                        "energy gab": None,
+                        "error": str(e),
+                    }
+                )
 
     data = pd.DataFrame(results)
-    
+
     data.to_csv(f"benchmark_results_{num_atoms}_ring.csv", index=False)
 
-#examples for testing
 
-if __name__ == "__main__":  
+# examples for testing
+
+if __name__ == "__main__":
 
     run_benchmark(num_atoms=6, num_jobs=5)
 
-    #run_benchmark_for_linear_molecules(num_atoms=4, num_jobs=200, axis="x")
-   
-    #run_benchmark_for_ring_molecules(num_atoms=10, num_jobs=200, radius=1)
-    '''
-    benchmarking_data_visualize_matplotlib("benchmark_results_4_ring.csv", 
+    # run_benchmark_for_linear_molecules(num_atoms=4, num_jobs=200, axis="x")
+
+    # run_benchmark_for_ring_molecules(num_atoms=10, num_jobs=200, radius=1)
+    """
+    benchmarking_data_visualize_matplotlib("benchmark_results_4_ring.csv",
                                                 methods_to_plot=["blossom", "nearest_insertion", "nearest_neighbour", "simulated annealing", "2-opt", "genetic algorithm", "brute force"],
                                                 show_first_n_molecules=55)
-    '''
+    """

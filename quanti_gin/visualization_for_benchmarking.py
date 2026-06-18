@@ -1,17 +1,16 @@
-
 import matplotlib.pyplot as plt
 import pandas as pd
 from tequila.quantumchemistry import QuantumChemistryBase
+
 
 def benchmarking_data_visualize_matplotlib(
     file_name,
     methods_to_plot=None,
     show_first_n_molecules=60,
-    base_spacing = 0.25,
-    radius = 1,
-    radius_increase = 0.25
+    base_spacing=0.25,
+    radius=1,
+    radius_increase=0.25,
 ):
-    
     """
     Visualize benchmarking results from CSV files.
 
@@ -73,7 +72,6 @@ def benchmarking_data_visualize_matplotlib(
         data = data[data["method"].isin(methods_to_plot)]
         methods = methods_to_plot
 
-
     # 1 — ENERGY DISTRIBUTION
     fig, ax = plt.subplots()
     grouped = [data[data["method"] == m]["energy"] for m in methods]
@@ -88,13 +86,14 @@ def benchmarking_data_visualize_matplotlib(
         widths=0.6,
     )
 
-    median_line = bp['medians'][0]
-    mean_line   = bp['means'][0]
+    median_line = bp["medians"][0]
+    mean_line = bp["means"][0]
 
     custom_lines = [
         plt.Line2D([], [], color=median_line.get_color(), label="Median"),
-        plt.Line2D([], [], color=mean_line.get_color(),
-                linestyle='--', label="Mean (Average)")
+        plt.Line2D(
+            [], [], color=mean_line.get_color(), linestyle="--", label="Mean (Average)"
+        ),
     ]
 
     if "ring" in file_name:
@@ -102,14 +101,12 @@ def benchmarking_data_visualize_matplotlib(
     else:
         ax.legend(handles=custom_lines, loc="upper right")
 
-
     ax.set_title("Energy Distribution per Method")
     ax.set_xlabel("Method")
     ax.set_ylabel("Energy (Eh)")
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.show()
-
 
     # 2 — RUNTIME DISTRIBUTION
     fig, ax = plt.subplots()
@@ -125,13 +122,14 @@ def benchmarking_data_visualize_matplotlib(
         widths=0.6,
     )
 
-    median_line = bp['medians'][0]
-    mean_line   = bp['means'][0]
+    median_line = bp["medians"][0]
+    mean_line = bp["means"][0]
 
     custom_lines = [
         plt.Line2D([], [], color=median_line.get_color(), label="Median"),
-        plt.Line2D([], [], color=mean_line.get_color(),
-                linestyle='--', label="Mean (Average)")
+        plt.Line2D(
+            [], [], color=mean_line.get_color(), linestyle="--", label="Mean (Average)"
+        ),
     ]
 
     ax.legend(handles=custom_lines, loc="upper right")
@@ -143,15 +141,10 @@ def benchmarking_data_visualize_matplotlib(
     plt.tight_layout()
     plt.show()
 
-
     # 3 — ENERGY SPREAD (min–max)
     data["mol_id"] = data.index // len(methods)
 
-    spread = (
-        data.groupby("mol_id")["energy"]
-        .agg(["min", "max"])
-        .reset_index()
-    )
+    spread = data.groupby("mol_id")["energy"].agg(["min", "max"]).reset_index()
     spread["spread"] = spread["max"] - spread["min"]
 
     if "line" in file_name:
@@ -166,8 +159,8 @@ def benchmarking_data_visualize_matplotlib(
             marker="o",
             markersize=4,
             linewidth=1.5,
-            color="tab:blue"
-        )       
+            color="tab:blue",
+        )
 
         ax.set_title("Energy Gap between Best and Worst Calculated Energy(Eh)")
         ax.set_xlabel("Distance between the Atoms in Angstrom")
@@ -177,7 +170,7 @@ def benchmarking_data_visualize_matplotlib(
 
     elif "ring" in file_name:
 
-        x_position  =  radius + radius_increase * spread["mol_id"]
+        x_position = radius + radius_increase * spread["mol_id"]
 
         fig, ax = plt.subplots()
         ax.plot(
@@ -186,8 +179,8 @@ def benchmarking_data_visualize_matplotlib(
             marker="o",
             markersize=4,
             linewidth=1.5,
-            color="tab:blue"
-        )       
+            color="tab:blue",
+        )
 
         ax.set_title("Energy Gap Between Best and Worst Calculated Energy(Eh)")
         ax.set_xlabel("Radius in Angstrom")
@@ -204,7 +197,7 @@ def benchmarking_data_visualize_matplotlib(
             marker="o",
             markersize=4,
             linewidth=1.5,
-            color="tab:blue"
+            color="tab:blue",
         )
 
         ax.set_title("Energy Gap Between Best and Worst Calculated Energy(Eh)")
@@ -212,7 +205,6 @@ def benchmarking_data_visualize_matplotlib(
         ax.set_ylabel("Energy Gap (Eh)")
         plt.tight_layout()
         plt.show()
-
 
     # 4 — ENERGY DIFFERENCE VS GROUND STATE
     fig, ax = plt.subplots()
@@ -228,17 +220,17 @@ def benchmarking_data_visualize_matplotlib(
         widths=0.6,
     )
 
-    median_line = bp['medians'][0]
-    mean_line   = bp['means'][0]
+    median_line = bp["medians"][0]
+    mean_line = bp["means"][0]
 
     custom_lines = [
         plt.Line2D([], [], color=median_line.get_color(), label="Median"),
-        plt.Line2D([], [], color=mean_line.get_color(),
-                linestyle='--', label="Mean (Average)")
+        plt.Line2D(
+            [], [], color=mean_line.get_color(), linestyle="--", label="Mean (Average)"
+        ),
     ]
 
     ax.legend(handles=custom_lines, loc="upper right")
-
 
     ax.set_title("Energy Gap (EH) to Ground State Energy(Eh)")
     ax.set_xlabel("Method")
@@ -247,22 +239,28 @@ def benchmarking_data_visualize_matplotlib(
     plt.tight_layout()
     plt.show()
 
-
     # 5 — METHOD ENERGIES VS GROUND STATE
     if methods_to_plot is None:
-        methods_to_plot = ["blossom", "nearest_insertion", "nearest_neighbour",
-                           "simulated annealing", "2-opt",
-                           "genetic algorithm", "brute force"]
-       
-    methods_to_linestyle = {"blossom": 'dotted',
-                                "nearest_insertion": 'dashed',
-                                "nearest_neighbour": ':',
-                                "simulated annealing": 'dashdot',
-                                "2-opt": '--',
-                                "genetic algorithm": '-.',
-                                "brute force": 'solid'}
-    fig, ax = plt.subplots(figsize=(10, 6))
+        methods_to_plot = [
+            "blossom",
+            "nearest_insertion",
+            "nearest_neighbour",
+            "simulated annealing",
+            "2-opt",
+            "genetic algorithm",
+            "brute force",
+        ]
 
+    methods_to_linestyle = {
+        "blossom": "dotted",
+        "nearest_insertion": "dashed",
+        "nearest_neighbour": ":",
+        "simulated annealing": "dashdot",
+        "2-opt": "--",
+        "genetic algorithm": "-.",
+        "brute force": "solid",
+    }
+    fig, ax = plt.subplots(figsize=(10, 6))
 
     if "line" in file_name:
 
@@ -273,14 +271,21 @@ def benchmarking_data_visualize_matplotlib(
             data["ground state energy"],
             color="black",
             linewidth=2,
-            label="Ground State"
+            label="Ground State",
         )
 
         for method in methods_to_plot:
             linestyle = methods_to_linestyle[method]
             df = data[data["method"] == method].sort_values("mol_id")
             x_method = base_spacing + 0.05 * df["mol_id"]
-            ax.plot(x_method, df["energy"], linewidth=1.5, alpha=0.8, linestyle=linestyle, label=method)
+            ax.plot(
+                x_method,
+                df["energy"],
+                linewidth=1.5,
+                alpha=0.8,
+                linestyle=linestyle,
+                label=method,
+            )
 
         ax.set_title("Method Energies (Eh) vs Ground State Energy (Eh)")
         ax.set_xlabel("Distance between the Atoms in Angstrom")
@@ -298,14 +303,21 @@ def benchmarking_data_visualize_matplotlib(
             data["ground state energy"],
             color="black",
             linewidth=2,
-            label="Ground State"
+            label="Ground State",
         )
 
         for method in methods_to_plot:
             linestyle = methods_to_linestyle[method]
             df = data[data["method"] == method].sort_values("mol_id")
             x_method = radius + radius_increase * df["mol_id"]
-            ax.plot(x_method, df["energy"], linewidth=1.5, alpha=0.8, linestyle=linestyle, label=method)
+            ax.plot(
+                x_method,
+                df["energy"],
+                linewidth=1.5,
+                alpha=0.8,
+                linestyle=linestyle,
+                label=method,
+            )
 
         ax.set_title("Method Energies (Eh) vs Ground State Energy (Eh)")
         ax.set_xlabel("Radius in Angstrom")
@@ -315,16 +327,25 @@ def benchmarking_data_visualize_matplotlib(
         plt.show()
 
     else:
-        ax.plot(data["mol_id"], 
-                data["ground state energy"], 
-                color="black", 
-                linewidth=2, 
-                label="Ground State")
-        
-        for method in methods_to_plot: 
-            linestyle = methods_to_linestyle[method] 
-            df = data[data["method"] == method].sort_values("mol_id") 
-            ax.plot(df["mol_id"], df["energy"], linewidth=1.5, alpha=0.8, linestyle=linestyle, label=method)
+        ax.plot(
+            data["mol_id"],
+            data["ground state energy"],
+            color="black",
+            linewidth=2,
+            label="Ground State",
+        )
+
+        for method in methods_to_plot:
+            linestyle = methods_to_linestyle[method]
+            df = data[data["method"] == method].sort_values("mol_id")
+            ax.plot(
+                df["mol_id"],
+                df["energy"],
+                linewidth=1.5,
+                alpha=0.8,
+                linestyle=linestyle,
+                label=method,
+            )
 
         ax.set_title("Method Energies (Eh) vs Ground State Energy (Eh)")
         ax.set_xlabel("Molecule ID")
@@ -333,24 +354,25 @@ def benchmarking_data_visualize_matplotlib(
         plt.tight_layout()
         plt.show()
 
-
     # 6 — ZOOMED FIRST N MOLECULES
-    methods_to_linestyle = {"blossom": 'dotted',
-                                "nearest_insertion": 'dashed',
-                                "nearest_neighbour": ':',
-                                "simulated annealing": 'dashdot',
-                                "2-opt": '--',
-                                "genetic algorithm": '-.',
-                                "brute force": 'solid'}
+    methods_to_linestyle = {
+        "blossom": "dotted",
+        "nearest_insertion": "dashed",
+        "nearest_neighbour": ":",
+        "simulated annealing": "dashdot",
+        "2-opt": "--",
+        "genetic algorithm": "-.",
+        "brute force": "solid",
+    }
 
     filtered = data[data["mol_id"] < show_first_n_molecules]
- 
+
     fig, ax = plt.subplots(figsize=(10, 6))
 
     if "line" in file_name:
         x_data = base_spacing + 0.05 * filtered["mol_id"]
         x_label = "Distance between the Atoms in Angstrom"
-    
+
     elif "ring" in file_name:
         x_data = radius + radius_increase * filtered["mol_id"]
         x_label = "Radius in Angstrom"
@@ -359,28 +381,33 @@ def benchmarking_data_visualize_matplotlib(
         x_data = filtered["mol_id"]
         x_label = "Molecule ID"
 
-    ax.plot(x_data, 
-            filtered["ground state energy"], 
-            color="black", 
-            linewidth=2, 
-            label="Ground State")
+    ax.plot(
+        x_data,
+        filtered["ground state energy"],
+        color="black",
+        linewidth=2,
+        label="Ground State",
+    )
 
     for method in methods_to_plot:
         linestyle = methods_to_linestyle[method]
         df = filtered[filtered["method"] == method].sort_values("mol_id")
-        
+
         if "line" in file_name:
             x_method = base_spacing + 0.05 * df["mol_id"]
         elif "ring" in file_name:
             x_method = radius + radius_increase * df["mol_id"]
         else:
             x_method = df["mol_id"]
-        
-        ax.plot(x_method, df["energy"], 
-                linewidth=1.5, 
-                alpha=0.8, 
-                linestyle=linestyle, 
-                label=method)
+
+        ax.plot(
+            x_method,
+            df["energy"],
+            linewidth=1.5,
+            alpha=0.8,
+            linestyle=linestyle,
+            label=method,
+        )
     if "line" in file_name:
         ax.set_ylim(top=-1, bottom=filtered["ground state energy"].min() * 1.05)
 
@@ -410,14 +437,9 @@ def benchmarking_data_visualize_matplotlib(
         color="black",
         linewidth=2,
         linestyle="-",
-        label="Ground State"
+        label="Ground State",
     )
-    ax.scatter(
-        x_data,
-        filtered["ground state energy"],
-        color="black",
-        s=30
-)
+    ax.scatter(x_data, filtered["ground state energy"], color="black", s=30)
 
     # 2-opt
     df_2opt = filtered[filtered["method"] == "2-opt"]
@@ -437,14 +459,9 @@ def benchmarking_data_visualize_matplotlib(
         color="purple",
         linewidth=1.5,
         linestyle="--",
-        label="2-opt"
+        label="2-opt",
     )
-    ax.scatter(
-        x_2opt,
-        df["energy"],
-        color="purple",
-        s=30
-    )
+    ax.scatter(x_2opt, df["energy"], color="purple", s=30)
 
     # Blossom
     df_blossom = filtered[filtered["method"] == "blossom"]
@@ -464,14 +481,9 @@ def benchmarking_data_visualize_matplotlib(
         color="skyblue",
         linewidth=1.5,
         linestyle=":",
-        label="blossom"
+        label="blossom",
     )
-    ax.scatter(
-        x_blossom,
-        df["energy"],
-        color="skyblue",
-        s=30
-    )
+    ax.scatter(x_blossom, df["energy"], color="skyblue", s=30)
 
     ax.set_title(f"Energy Comparison for First {show_first_n_molecules} Molecules")
     ax.set_xlabel(x_label)
