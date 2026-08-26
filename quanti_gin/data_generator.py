@@ -32,7 +32,7 @@ from quanti_gin.shared import (
     simulated_annealing,
     genetic_algorithm,
     minimum_weight_perfect_performance,
-    blossom_scaled
+    blossom_scaled,
 )
 
 logger = logging.getLogger(__name__)
@@ -164,7 +164,7 @@ class DataGenerator:
         coordinates,
         key_heuristic=None,
         num_atoms=None,
-        edges = None,
+        edges=None,
         **kwargs,
     ):
         if num_atoms == None:
@@ -202,13 +202,13 @@ class DataGenerator:
         graph = [tuple(edge) for edge in edges]
         angles = spa_angles_for_graph(mol, graph)
         var_dict = {}
-        
+
         for k, param_key in enumerate(U.make_parameter_map()):
             var_dict[param_key] = angles[k]
 
         result = tq.simulate(E, variables=var_dict)
-        
-        #result2 = tq.minimize(E, silent=True)
+
+        # result2 = tq.minimize(E, silent=True)
 
         U_x = mol.hcb_to_me(U)
 
@@ -216,7 +216,7 @@ class DataGenerator:
             energy=result,
             orbital_coefficients=opt.molecule.integral_manager.orbital_coefficients,
             orbital_transformation=opt.mo_coeff,
-            #variables=result.variables,
+            # variables=result.variables,
             variables=var_dict,
             circuit=U_x,
             molecule=mol,
@@ -276,7 +276,7 @@ class DataGenerator:
                 "simulated_annealing": simulated_annealing,
                 "genetic_algorithm": genetic_algorithm,
                 "minimum_weight_perfect_performance": minimum_weight_perfect_performance,
-                "spa_blossom_scaled": blossom_scaled
+                "spa_blossom_scaled": blossom_scaled,
             }
 
             return heuristic_map.get(name)
@@ -529,7 +529,7 @@ def main():
             "spa_simulated_annealing",
             "spa_genetic_algorithm",
             "spa_minimum_weight_perfect_performance",
-            "spa_blossom_scaled"
+            "spa_blossom_scaled",
         ],
         required=False,
         default="spa",
@@ -574,7 +574,7 @@ def main():
             "spa_simulated_annealing",
             "spa_genetic_algorithm",
             "spa_minimum_weight_perfect_performance",
-            "spa_blossom_scaled"
+            "spa_blossom_scaled",
         ],
         help="what to compare the primary method to",
     )
