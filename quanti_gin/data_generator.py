@@ -22,6 +22,8 @@ from numpy.typing import NDArray
 from tequila.quantumchemistry import QuantumChemistryBase
 from tqdm import tqdm
 
+from quanti_gin.spa_solve import spa_angles_for_graph
+
 from quanti_gin.shared import (
     generate_min_global_distance_edges,
     brute_force,
@@ -30,6 +32,7 @@ from quanti_gin.shared import (
     simulated_annealing,
     genetic_algorithm,
     minimum_weight_perfect_performance,
+    blossom_scaled
 )
 
 logger = logging.getLogger(__name__)
@@ -161,20 +164,21 @@ class DataGenerator:
         coordinates,
         key_heuristic=None,
         num_atoms=None,
+        edges = None,
         **kwargs,
     ):
         if num_atoms == None:
             num_atoms = len(coordinates)
+        if edges == None:
+            if key_heuristic == None:
+                edges = generate_min_global_distance_edges(coordinates)
 
-        if key_heuristic == None:
-            edges = generate_min_global_distance_edges(coordinates)
-
-        else:
-            sig = inspect.signature(key_heuristic)
-            if len(sig.parameters) > 1:
-                edges = key_heuristic(num_atoms, coordinates)
             else:
-                edges = key_heuristic(coordinates)
+                sig = inspect.signature(key_heuristic)
+                if len(sig.parameters) > 1:
+                    edges = key_heuristic(num_atoms, coordinates)
+                else:
+                    edges = key_heuristic(coordinates)
 
         initial_guess = cls.generate_initial_guess_from_edges(
             edges=edges, vertices=coordinates
@@ -194,15 +198,26 @@ class DataGenerator:
         H = mol.make_hardcore_boson_hamiltonian()
 
         E = tq.ExpectationValue(H=H, U=U)
-        result = tq.minimize(E, silent=True)
+
+        graph = [tuple(edge) for edge in edges]
+        angles = spa_angles_for_graph(mol, graph)
+        var_dict = {}
+        
+        for k, param_key in enumerate(U.make_parameter_map()):
+            var_dict[param_key] = angles[k]
+
+        result = tq.simulate(E, variables=var_dict)
+        
+        #result2 = tq.minimize(E, silent=True)
 
         U_x = mol.hcb_to_me(U)
 
         return OptimizationResult(
-            energy=result.energy,
+            energy=result,
             orbital_coefficients=opt.molecule.integral_manager.orbital_coefficients,
             orbital_transformation=opt.mo_coeff,
-            variables=result.variables,
+            #variables=result.variables,
+            variables=var_dict,
             circuit=U_x,
             molecule=mol,
             custom_data=None,
@@ -261,6 +276,7 @@ class DataGenerator:
                 "simulated_annealing": simulated_annealing,
                 "genetic_algorithm": genetic_algorithm,
                 "minimum_weight_perfect_performance": minimum_weight_perfect_performance,
+                "spa_blossom_scaled": blossom_scaled
             }
 
             return heuristic_map.get(name)
@@ -513,6 +529,7 @@ def main():
             "spa_simulated_annealing",
             "spa_genetic_algorithm",
             "spa_minimum_weight_perfect_performance",
+            "spa_blossom_scaled"
         ],
         required=False,
         default="spa",
@@ -557,6 +574,7 @@ def main():
             "spa_simulated_annealing",
             "spa_genetic_algorithm",
             "spa_minimum_weight_perfect_performance",
+            "spa_blossom_scaled"
         ],
         help="what to compare the primary method to",
     )
