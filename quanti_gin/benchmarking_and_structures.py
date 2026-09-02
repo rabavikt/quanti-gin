@@ -32,7 +32,7 @@ heueristics = {
     "genetic algorithm": genetic_algorithm,
     "brute force": brute_force,
     "blossom scaled": blossom_scaled,
-    "ant colony": ant_colony_opt
+    "ant colony": ant_colony_opt,
 }
 
 
@@ -113,7 +113,7 @@ def run_benchmark(num_atoms, num_jobs):
                     "genetic algorithm",
                     "brute force",
                     "blossom scaled",
-                    "ant colony"
+                    "ant colony",
                 ):
                     start_time = time.time()
                     edges = function(num_atoms, coordinates)
@@ -391,13 +391,13 @@ def run_benchmark_for_ring_molecules(
 
 if __name__ == "__main__":
 
-    #run_benchmark(num_atoms=10, num_jobs=10)
-    #benchmarking_data_visualize_matplotlib("benchmark_results_10.csv")
-    
+    # run_benchmark(num_atoms=10, num_jobs=10)
+    # benchmarking_data_visualize_matplotlib("benchmark_results_10.csv")
+
     # run_benchmark_for_linear_molecules(num_atoms=4, num_jobs=200, axis="x")
 
     # run_benchmark_for_ring_molecules(num_atoms=10, num_jobs=200, radius=1)
-    
+
     """
     benchmarking_data_visualize_matplotlib("benchmark_results_10.csv",
                                                 methods_to_plot=["blossom", "nearest_insertion", "nearest_neighbour", "simulated annealing", "2-opt", "genetic algorithm", "brute force"],
