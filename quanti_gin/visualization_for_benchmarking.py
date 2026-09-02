@@ -241,6 +241,7 @@ def benchmarking_data_visualize_matplotlib(
 
     # 5 — METHOD ENERGIES VS GROUND STATE
     if methods_to_plot is None:
+        
         methods_to_plot = [
             "blossom",
             "nearest_insertion",
@@ -249,6 +250,7 @@ def benchmarking_data_visualize_matplotlib(
             "2-opt",
             "genetic algorithm",
             "brute force",
+            "blossom scaled"
         ]
 
     methods_to_linestyle = {
@@ -259,6 +261,7 @@ def benchmarking_data_visualize_matplotlib(
         "2-opt": "--",
         "genetic algorithm": "-.",
         "brute force": "solid",
+        "blossom scaled": "dashdot"
     }
     fig, ax = plt.subplots(figsize=(10, 6))
 
@@ -363,6 +366,7 @@ def benchmarking_data_visualize_matplotlib(
         "2-opt": "--",
         "genetic algorithm": "-.",
         "brute force": "solid",
+        "blossom scaled": "dashdot"
     }
 
     filtered = data[data["mol_id"] < show_first_n_molecules]
@@ -483,7 +487,27 @@ def benchmarking_data_visualize_matplotlib(
         linestyle=":",
         label="blossom",
     )
-    ax.scatter(x_blossom, df["energy"], color="skyblue", s=30)
+   
+    df_blossom_scaled = filtered[filtered["method"] == "blossom scaled"]
+
+    if "line" in file_name:
+        x_blossom_scaled = base_spacing + 0.05 * df_blossom_scaled["mol_id"]
+
+    elif "ring" in file_name:
+        x_blossom_scaled = radius + radius_increase * df_blossom_scaled["mol_id"]
+
+    else:
+        x_blossom_scaled = df_blossom_scaled["mol_id"]
+
+    ax.plot(
+        x_blossom_scaled,
+        df["energy"],
+        color="red",
+        linewidth=1.5,
+        linestyle=":",
+        label="blossom scaled",
+    )
+    ax.scatter(x_blossom_scaled, df["energy"], color="red", s=30)
 
     ax.set_title(f"Energy Comparison for First {show_first_n_molecules} Molecules")
     ax.set_xlabel(x_label)
